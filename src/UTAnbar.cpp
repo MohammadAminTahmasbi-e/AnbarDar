@@ -6,7 +6,7 @@
 void UTAnbar::addBin(istringstream& line){
     string id, type;
     int cap;
-    
+
     line >> id >> cap >> type;
     if(bins.find(id) != bins.end()){
         throw invalid_argument(REP_ID_ERR);
@@ -16,6 +16,9 @@ void UTAnbar::addBin(istringstream& line){
     bins[id] = bin;
 }
 
+void UTAnbar::recieveShipment(istringstream& line){
+
+}
 
 void UTAnbar::getCommands(){
     string line, cmd;
@@ -26,6 +29,9 @@ void UTAnbar::getCommands(){
         getline(l, cmd, SPACE);
         if(cmd == CMD_ADD_BIN){
             addBin(l);
+        }
+        else if(cmd == CMD_REC_SHP){
+            recieveShipment(l);
         }
     }
 }
