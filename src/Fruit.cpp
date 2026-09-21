@@ -13,9 +13,14 @@ Fruit::Fruit(string cat, string name_, string shipmentId_, float freshness_, flo
 
     name = name_;
     category = cat;
+    shipmentId = shipmentId_;
     freshness = freshness_;
     decayRate = decayRate_;
     quantity = quantity_;
+}
+
+inline string Fruit::getCategory(){
+    return category;
 }
 
 float RegularFruit::calcFreshness(float binModifier){

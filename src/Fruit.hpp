@@ -13,6 +13,7 @@ const int ORG_PENALTY_RATE = 2;
 class Fruit{
     public:
     Fruit(string cat, string name_, string shipmentId_, float freshness_, float decayRate_, int quantity_);
+    inline string getCategory();
     virtual float calcFreshness(float binModifier) = 0;
 
     protected:
