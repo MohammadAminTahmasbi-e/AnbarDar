@@ -1,7 +1,16 @@
-#ifndef UTANBAR_HPP
-#define UTANBAR_HPP
-
 #include "UTAnbar.hpp" 
+
+void UTAnbar::addWaitList(DeliveryInfo delInfo){
+    if(delInfo.productCategory == REG_FRU_CAT){
+        waitList.push_back(make_shared<RegularFruit>(delInfo));
+    }
+    else if(delInfo.productCategory == ORG_FRU_CAT){
+        waitList.push_back(make_shared<OrganicFruit>(delInfo));
+    }
+    else{
+        waitList.push_back(make_shared<GreenhouseFruit>(delInfo));
+    }
+}
 
 void UTAnbar::addBin(istringstream& line){
     string id, type;
@@ -11,15 +20,14 @@ void UTAnbar::addBin(istringstream& line){
     if(bins.find(id) != bins.end()){
         throw invalid_argument(REP_ID_ERR);
     }
-
-    Bin bin(id, type, cap);
-    bins[id] = bin;
+    bins.insert({id, Bin(id, type, cap)});
+    
     cout << "Success: Storage bin " << id << " created successfully" << endl;
 }
 
 void UTAnbar::putInBin(DeliveryInfo delInfo){
     if(delInfo.deliveryType == DIR_DEL_TYP){
-        bins[delInfo.binId].put(delInfo);
+        bins.at(delInfo.binId).put(delInfo);
         return;
     }
 
@@ -33,8 +41,7 @@ void UTAnbar::putInBin(DeliveryInfo delInfo){
             bin->put(delInfo);
         }
         else{
-            waitList.push_back(make_shared<Fruit>(delInfo.productCategory, delInfo.productName, delInfo.shipmentId,
-                                            delInfo.freshness, delInfo.decayRate, delInfo.quantity));
+            addWaitList(delInfo);
 
             cout << "Success: Shipment " << delInfo.shipmentId << " added to waiting queue" << endl;
         }
@@ -45,10 +52,10 @@ void UTAnbar::recieveShipment(istringstream& line){
     DeliveryInfo delInfo;
 
     line >> delInfo.shipmentId >> delInfo.deliveryType;
-    if(delInfo.deliveryType == BUL_DEL_TYP){
+    if(delInfo.deliveryType == DIR_DEL_TYP){
         line >> delInfo.binId;
 
-        if(bins.find(delInfo.binId) != bins.end()){
+        if(bins.find(delInfo.binId) == bins.end()){
             throw invalid_argument("Error: Bin " + delInfo.binId + " does not exist");
         }
     }
@@ -58,18 +65,17 @@ void UTAnbar::recieveShipment(istringstream& line){
     if(delInfo.deliveryType != BUL_DEL_TYP && delInfo.deliveryType != DIR_DEL_TYP){
         throw invalid_argument(PARAM_ERR);
     }
-    if(shipmentIds.find(delInfo.shipmentId) == shipmentIds.end()){
+    if(shipmentIds.find(delInfo.shipmentId) != shipmentIds.end()){
         throw invalid_argument(REP_SHP_ID_ERR);
     }
     
     putInBin(delInfo);
+    shipmentIds.insert(delInfo.shipmentId);
 }
 
 Bin* UTAnbar::findBin(string category, int quantity, bool dedicatedOnly){
-    auto id_bin = bins.begin();
-
-    for(;id_bin != bins.end(); ++id_bin){
-        if((id_bin->second.getType() == "dedicated" || !dedicatedOnly) && id_bin->second.isSuitableToPut(category, quantity)){
+    for(auto id_bin = bins.begin();id_bin != bins.end(); ++id_bin){
+        if((id_bin->second.getType() == DED_BIN || !dedicatedOnly) && id_bin->second.isSuitableToPut(category, quantity)){
             return &id_bin->second;
         }
     }
@@ -83,13 +89,17 @@ void UTAnbar::getCommands(){
     while(getline(cin, line)){
         istringstream l(line);
         
-        getline(l, cmd, SPACE);
-        if(cmd == CMD_ADD_BIN){
-            addBin(l);
+        try{
+            getline(l, cmd, SPACE);
+            if(cmd == CMD_ADD_BIN){
+                addBin(l);
+            }
+            else if(cmd == CMD_REC_SHP){
+                recieveShipment(l);
+            }
         }
-        else if(cmd == CMD_REC_SHP){
-            recieveShipment(l);
+        catch(const invalid_argument& e){
+            cout << e.what() << endl;
         }
     }
 }
-#endif

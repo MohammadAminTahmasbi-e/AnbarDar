@@ -1,10 +1,26 @@
+#ifndef FRUIT_HPP
+#define FRUIT_HPP
+
 #include <string>
 #include <set>
 #include <stdexcept>
 
 using namespace std;
 
-const set<string> FRUIT_CATS = {"Regular", "Organic", "Greenhouse"};
+struct DeliveryInfo{
+    string shipmentId; 
+    string deliveryType;
+    string binId;
+    string productName;
+    string productCategory;
+    int quantity;
+    float freshness; 
+    float decayRate;
+};
+const string ORG_FRU_CAT = "organic";
+const string REG_FRU_CAT = "regular";
+const string GRE_FRU_CAT = "greenhouse"; 
+const set<string> FRUIT_CATS = {REG_FRU_CAT, ORG_FRU_CAT, GRE_FRU_CAT};
 const string CAT_ERR = "Error: Invalid product category";
 const string PARAM_ERR = "Error: Invalid shipment parameters";
 const int ORG_CRITICAL_POINT = 50;
@@ -12,9 +28,9 @@ const int ORG_PENALTY_RATE = 2;
 
 class Fruit{
     public:
-    Fruit(string cat, string name_, string shipmentId_, float freshness_, float decayRate_, int quantity_);
-    inline string getCategory();
-    virtual float calcFreshness(float binModifier) = 0;
+    Fruit(DeliveryInfo delInfo);
+    string getCategory();
+    virtual float calcFreshness(float binModifier, float advancedTime) = 0;
 
     protected:
     string category;
@@ -27,15 +43,21 @@ class Fruit{
 
 class RegularFruit : public Fruit{
     public:
-    virtual float calcFreshness(float binModifier);
+    RegularFruit(DeliveryInfo delInfo);
+    virtual float calcFreshness(float binModifier, float advancedTime);
 };
 
 class OrganicFruit : public Fruit{
     public:
-    virtual float calcFreshness(float binModifier);
+    OrganicFruit(DeliveryInfo delInfo);
+    virtual float calcFreshness(float binModifier, float advancedTime);
 };
 
 class GreenhouseFruit : public Fruit{
     public:
-    virtual float calcFreshness(float binModifier);
+    GreenhouseFruit(DeliveryInfo delInfo);
+    virtual float calcFreshness(float binModifier, float advancedTime);
 };
+
+
+#endif
