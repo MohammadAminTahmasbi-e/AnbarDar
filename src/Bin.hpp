@@ -16,7 +16,7 @@ const string DED_BIN = "dedicated";
 const string STD_BIN = "standard";
 const string COL_BIN = "cold_storage";
 const set<string> BIN_TYPES{DED_BIN, STD_BIN, COL_BIN};
-const map<string, float> BIN_RATES = {{"standard", 1}, {"dedicated", 0.8}, {"cold_storage", 0.5}};
+const map<string, float> BIN_RATES = {{STD_BIN, 1}, {DED_BIN, 0.8}, {COL_BIN, 0.5}};
 const string BIN_TYPE_ERR = "Error: Invalid bin type";
 const string ID_ERR = "Error: A bin with this ID already exists"; 
 const string CAP_ERR = "Error: Invalid capacity";
@@ -29,9 +29,12 @@ class Bin{
     public:
     Bin(string id_, string type_, int cap);
     void put(DeliveryInfo delInfo);
+    void put(shared_ptr<Fruit> fruit);
     void addFruit(DeliveryInfo delInfo);
     bool isSuitableToPut(string category, int quantity);
+    void checkSpoilage(bool& spoiledFounded);
     string getType();
+    void tick(float time);
     private:
     string id;
     string type;

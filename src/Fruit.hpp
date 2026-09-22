@@ -30,6 +30,10 @@ class Fruit{
     public:
     Fruit(DeliveryInfo delInfo);
     string getCategory();
+    float getFreshness();
+    string getShipmentId();
+    string getName();
+    int getQuantity();
     virtual float calcFreshness(float binModifier, float advancedTime) = 0;
 
     protected:

@@ -61,6 +61,36 @@ bool Bin::isSuitableToPut(string category, int quantity){
     return true;
 }
 
+void Bin::tick(float time){
+    for(auto fruit = fruits.begin(); fruit != fruits.end(); ++fruit){
+        (*fruit)->calcFreshness(BIN_RATES.at(type), time);
+    }
+}
+
+void Bin::checkSpoilage(bool& spoiledFounded){
+    auto fruit = fruits.begin();
+    
+    while(fruit != fruits.end()){
+        if(!(*fruit)->getFreshness()){
+            if(!spoiledFounded){
+                spoiledFounded = true;
+
+                cout << "Spoiled shipments removed:" << endl;
+            }
+            cout << "- Bin " << id << ": Shipment " << (*fruit)->getShipmentId() 
+                 << " (" << (*fruit)->getName() << ", " << (*fruit)->getQuantity() << " units)" << endl;
+
+            fruit = fruits.erase(fruit);
+            continue;
+        }
+        ++fruit;
+    }
+}
+
+void Bin::put(shared_ptr<Fruit> fruit){
+    fruits.push_back(fruit);
+}
+
 string Bin::getType(){
     return type;
 }

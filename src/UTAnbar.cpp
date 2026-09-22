@@ -83,6 +83,82 @@ Bin* UTAnbar::findBin(string category, int quantity, bool dedicatedOnly){
     return NULL;
 }
 
+void UTAnbar::tickWaitlist(float time){
+    auto delivery = waitList.begin();
+
+    while(delivery != waitList.end()){
+        if(!(*delivery)->calcFreshness(WAIT_LIST_MODIFIER, time)){
+            delivery = waitList.erase(delivery);
+            continue;
+        }
+        ++delivery;
+    }
+}
+
+void UTAnbar::tickBins(float time){
+    for(auto id_bin = bins.begin(); id_bin != bins.end(); ++id_bin){
+        id_bin->second.tick(time);
+    }
+}
+
+void UTAnbar::tick(istringstream& line){
+    float timeUnits;
+
+    line >> timeUnits;
+    if(timeUnits < 0){
+        throw invalid_argument(INV_TIM_UNI);
+    }
+
+    tickWaitlist(timeUnits);
+    tickBins(timeUnits);
+
+    cout << "Success: Time advanced by " << timeUnits << " units " << endl;
+}
+
+bool UTAnbar::putIfPossible(shared_ptr<Fruit> fruit){
+    Bin* bin = findBin(fruit->getCategory(), fruit->getQuantity(), true);
+
+    if(bin != NULL){
+        bin->put(fruit);
+    }
+    else{
+        Bin* bin = findBin(fruit->getCategory(), fruit->getQuantity(), true);
+
+        if(bin != NULL){
+            bin->put(fruit);
+        }
+        else{
+            return false;
+        }
+    }
+    return true;
+}
+
+void UTAnbar::moveFromWaitlist(){
+    auto delivery = waitList.begin();
+
+    while(delivery != waitList.end()){
+        if(!putIfPossible(*delivery)){
+            delivery = waitList.erase(delivery);
+            continue;
+        }
+        ++delivery;
+    }
+}
+
+void UTAnbar::checkSpoilage(){
+    bool isSpoiled = false;
+
+    for(auto id_bin = bins.begin(); id_bin != bins.end(); ++id_bin){
+        id_bin->second.checkSpoilage(isSpoiled);
+    }
+    if(!isSpoiled){
+        cout << NO_SPOILED_OUT << endl;
+        return;
+    }
+    moveFromWaitlist();
+}
+
 void UTAnbar::getCommands(){
     string line, cmd;
 
@@ -96,6 +172,12 @@ void UTAnbar::getCommands(){
             }
             else if(cmd == CMD_REC_SHP){
                 recieveShipment(l);
+            }
+            else if(cmd == CMD_TIC){
+                tick(l);
+            }
+            else if(cmd == CMD_CHK_SPO){
+                checkSpoilage();
             }
         }
         catch(const invalid_argument& e){

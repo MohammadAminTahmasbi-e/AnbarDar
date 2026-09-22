@@ -20,6 +20,22 @@ string Fruit::getCategory(){
     return category;
 }
 
+float Fruit::getFreshness(){
+    return freshness;
+}
+
+string Fruit::getShipmentId(){
+    return shipmentId;
+}
+
+int Fruit::getQuantity(){
+    return quantity;
+}
+
+string Fruit::getName(){
+    return name;
+}
+
 RegularFruit::RegularFruit(DeliveryInfo delInfo) : Fruit(delInfo){}
 
 float RegularFruit::calcFreshness(float binModifier, float advancedTime){
